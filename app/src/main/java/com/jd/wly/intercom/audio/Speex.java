@@ -10,15 +10,7 @@ public class Speex {
 
     private static final int DEFAULT_COMPRESSION = 5;
 
-    static {
-        try {
-            System.loadLibrary("speex");
-            Log.e("Speex","Speex 加载成功");
-        } catch (Throwable e) {
-            e.printStackTrace();
-            Log.e("Speex","Speex 加载失败");
-        }
-    }
+
 
     private static Speex speex = null;
 

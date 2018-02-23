@@ -24,6 +24,17 @@ public class MainActivity extends AppCompatActivity {
     Recorder recorder;
     Tracker tracker;
     TimeThread timeThread;
+    EncodeAudio encoder;
+
+    static {
+        try {
+            System.loadLibrary("speex");
+            Log.e("Speex","Speex 加载成功");
+        } catch (Throwable e) {
+            e.printStackTrace();
+            Log.e("Speex","Speex 加载失败");
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +81,18 @@ public class MainActivity extends AppCompatActivity {
                 tracker.start();
             }
         });
+
+        encoder = new EncodeAudio(new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                Bundle bundle = msg.getData();
+                String s = bundle.getString("msg");
+                if(s != null){
+                    Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        encoder.start();
     }
 
     private void stopRecord(){

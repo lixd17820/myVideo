@@ -8,6 +8,8 @@ import android.os.Handler;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 
+import com.ntjxj.data.AudioDataUtil;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,7 +37,7 @@ public class Tracker extends JobHandler {
         audioTrack = new AudioTrack(Constants.streamType,
                 Constants.sampleRateInHz, Constants.outputChannelConfig, Constants.audioFormat,
                 outAudioBufferSize, Constants.trackMode);
-        Log.e("Tracker","max " + AudioTrack.getMaxVolume());
+        Log.e("Tracker", "max " + AudioTrack.getMaxVolume());
         audioTrack.play();
     }
 
@@ -54,13 +56,18 @@ public class Tracker extends JobHandler {
             Log.e("Tracker", soundFile.getAbsolutePath() + isPlaying);
             FileInputStream fis = new FileInputStream(soundFile);
             int len = 0;
-            byte[] rawData = new byte[outAudioBufferSize];
-            while ((len = fis.read(rawData)) > 0) {
-                audioTrack.write(rawData, 0, len);
-            }
+            byte[] rawData = new byte[(int) soundFile.length()];
+            fis.read(rawData);
+            //byte[] rawData = new byte[outAudioBufferSize];
+            //while ((len = fis.read(rawData)) > 0) {
+            //    audioTrack.write(rawData, 0, len);
+            //}
             if (fis != null) {
                 fis.close();
             }
+            short[] spx = AudioDataUtil.spx2raw(rawData);
+            Log.e("Tracker", "前："+rawData.length+"后：" + spx.length);
+            audioTrack.write(spx, 0, spx.length);
         } catch (IOException e) {
             e.printStackTrace();
         }

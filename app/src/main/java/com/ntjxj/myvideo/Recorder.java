@@ -5,9 +5,13 @@ import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 
+import com.ntjxj.data.AudioData;
+import com.ntjxj.data.MessageQueue;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Created by lixiaodong on 2018/2/21.
@@ -42,26 +46,32 @@ public class Recorder extends JobHandler {
 
     @Override
     public void run() {
-        try {
-            File soundFile = new File( Environment.getExternalStorageDirectory(),"sound_test.raw");
-            Log.e("Recorder",soundFile.getAbsolutePath()+isRecording);
-            FileOutputStream fos = new FileOutputStream(soundFile);
-            while (isRecording) {
-                if (audioRecord.getRecordingState() == AudioRecord.RECORDSTATE_STOPPED) {
-                    audioRecord.startRecording();
-                }
-                // 实例化音频数据缓冲
-                byte[] rawData = new byte[inAudioBufferSize];
-                int len = audioRecord.read(rawData, 0, inAudioBufferSize);
-                fos.write(rawData, 0, len);
+        //try {
+        //File soundFile = new File( Environment.getExternalStorageDirectory(),"sound_test.raw");
+        //Log.e("Recorder",soundFile.getAbsolutePath()+isRecording);
+        //FileOutputStream fos = new FileOutputStream(soundFile);
+        while (isRecording) {
+            if (audioRecord.getRecordingState() == AudioRecord.RECORDSTATE_STOPPED) {
+                audioRecord.startRecording();
             }
-            if (fos != null) {
-                fos.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+            // 实例化音频数据缓冲
+            //byte[] rawData = new byte[inAudioBufferSize];
+            //int len = audioRecord.read(rawData, 0, inAudioBufferSize);
+            //fos.write(rawData, 0, len);
+            short[] rawData = new short[inAudioBufferSize];
+            int len = audioRecord.read(rawData, 0, inAudioBufferSize);
+            AudioData data = new AudioData(Arrays.copyOf(rawData,len));
+            MessageQueue.getInstance(MessageQueue.ENCODER_DATA_QUEUE).put(data);
         }
-
+        AudioData data = new AudioData();
+        data.setStop(true);
+        MessageQueue.getInstance(MessageQueue.ENCODER_DATA_QUEUE).put(data);
+        //if (fos != null) {
+        //    fos.close();
+        //}
+        //} catch (IOException e) {
+        //    e.printStackTrace();
+        //}
     }
 
     @Override
